@@ -51,12 +51,32 @@ class App extends React.Component {
         this._settings = settings;
     }
 
+  }
+
+  _cleanUp = async () => {
+    await this.conference.cleanUp();
+    await this.client.leave();
+  };
+
+  _notification = (message, description) => {
+    notification.info({
+      message: message,
+      description: description,
+      placement: 'bottomRight',
+    });
+  };
+
+  _handleJoin = async values => {
+    this.setState({ loading: true });
+
     let url = "wss://" + window.location.host;
     //for dev by scripts
-    if(this._settings.isDevMode){
-      url = "wss://" + window.location.hostname + ":8443";
+    if(process.env.NODE_ENV == "development"){
+      const proto = this._settings.isDevMode ? "ws" : "wss"
+      url = proto + "://" + window.location.hostname + ":8443";
     }
-    console.log("Wss url is:" + url);
+
+    console.log("WS url is:" + url);
     let client = new Client({url: url});
 
     window.onunload = async () => {
@@ -71,11 +91,12 @@ class App extends React.Component {
       this._notification("Peer Leave", "peer => " + id + ", leave!");
     });
 
-    client.on("transport-open", function () {
+    client.on("transport-open", () => {
       console.log("transport open!");
+      this._handleTransportOpen(values);
     });
 
-    client.on("transport-closed", function () {
+    client.on("transport-closed", () => {
       console.log("transport closed!");
     });
 
@@ -98,24 +119,10 @@ class App extends React.Component {
     });
 
     this.client = client;
-  }
-
-  _cleanUp = async () => {
-    await this.conference.cleanUp();
-    await this.client.leave();
   };
 
-  _notification = (message, description) => {
-    notification.info({
-      message: message,
-      description: description,
-      placement: 'bottomRight',
-    });
-  };
-
-  _handleJoin = async values => {
-    this.setState({ loading: true });
-    reactLocalStorage.clear("loginInfo");
+  _handleTransportOpen = async (values) => {
+    reactLocalStorage.remove("loginInfo");
     reactLocalStorage.setObject("loginInfo", values);
     await this.client.join(values.roomId, { name: values.displayName });
     this.setState({
@@ -130,7 +137,7 @@ class App extends React.Component {
       "Welcome to the ion room => " + values.roomId
     );
     await this.conference.handleLocalStream(true);
-  };
+  }
 
   _handleLeave = async () => {
     let client = this.client;
