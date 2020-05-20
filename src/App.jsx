@@ -77,7 +77,11 @@ class App extends React.Component {
     }
 
     console.log("WS url is:" + url);
-    let client = new Client({url: url});
+    let client = new Client({url: url, rtc: { iceServers: [ {
+          credential: "tribecore",
+          username: "tribecore",
+          urls: "turn:coturn.tribecore.io:3478"
+        }]}});
 
     window.onunload = async () => {
       await this._cleanUp();
