@@ -82,7 +82,7 @@ class App extends React.Component {
           urls: "turn:coturn.tribecore.io:3478"
         }]}});
 =======*/
-    let client = new Client({url: url, rtc {
+    let client = new Client({url: url, rtc: {
       iceServers: [
         {
           credential: "tribecore",
