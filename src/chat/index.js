@@ -3,8 +3,8 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
-import ChatBubble from './chatbubble';
-import ChatInput from './chatinput';
+import ChatBubble from './ChatBubble';
+import ChatInput from './ChatInput';
 import "./style.scss";
 
 export default class ChatFeed extends Component {
@@ -15,7 +15,7 @@ export default class ChatFeed extends Component {
     }
   }
 
-  _scrollToBottom() {
+  _scrollToBottom = () => {
     const { chat } = this.refs;
     if(chat !== undefined){
       const scrollHeight = chat.scrollHeight;
@@ -25,10 +25,10 @@ export default class ChatFeed extends Component {
     }
   }
 
-  _renderGroup(messages, index, id) {
-    var group = []
+  _renderGroup = (messages, index, id) => {
+    let group = []
 
-    for (var i = index; messages[i] ? messages[i].id == id : false; i--) {
+    for (let i = index; messages[i] ? messages[i].id == id : false; i--) {
       group.push(messages[i])
     }
 
@@ -47,9 +47,8 @@ export default class ChatFeed extends Component {
     )
   }
 
-  _renderMessages(messages) {
+  _renderMessages = (messages) => {
     var message_nodes = messages.map((curr, index) => {
-      // Find diff in message type or no more messages
       if (
         (messages[index + 1] ? false : true) ||
         messages[index + 1].id != curr.id
@@ -57,7 +56,6 @@ export default class ChatFeed extends Component {
         return this._renderGroup(messages, index, curr.id)
       }
     })
-    // return nodes
     return message_nodes
   }
 
@@ -65,10 +63,6 @@ export default class ChatFeed extends Component {
     window.setTimeout(() => {
       this._scrollToBottom()
     }, 10)
-
-    const messages = [
-      {id:0,message:"hello every one",senderName:'kevin kang'},
-      ];
 
     return (
       <div id="chat-panel" className='chat-panel'>

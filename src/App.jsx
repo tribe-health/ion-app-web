@@ -66,9 +66,7 @@ class App extends React.Component {
     });
   };
 
-  _handleJoin = async values => {
-    this.setState({ loading: true });
-
+  _createClient = () => {
     let url = "wss://" + window.location.host;
     //for dev by scripts
     if(process.env.NODE_ENV == "development"){
@@ -76,12 +74,32 @@ class App extends React.Component {
       url = proto + "://" + window.location.host;
     }
 
+/*<<<<<<< HEAD
     console.log("WS url is:" + url);
     let client = new Client({url: url, rtc: { iceServers: [ {
           credential: "tribecore",
           username: "tribecore",
           urls: "turn:coturn.tribecore.io:3478"
         }]}});
+=======*/
+    let client = new Client({url: url, rtc {
+      iceServers: [
+        {
+          credential: "tribecore",
+          username:"tribecore",
+          urls: "turn:coturn.tribecore.io:3478"
+        }
+      ]
+      }});
+    client.url = url;
+
+    return client
+  }
+
+  _handleJoin = async values => {
+    this.setState({ loading: true });
+
+    let client = this._createClient();
 
     window.onunload = async () => {
       await this._cleanUp();
@@ -89,10 +107,12 @@ class App extends React.Component {
 
     client.on("peer-join", (id, info) => {
       this._notification("Peer Join", "peer => " + info.name + ", join!");
+      this._onSystemMessage(info.name + ", join!");
     });
 
     client.on("peer-leave", (id) => {
       this._notification("Peer Leave", "peer => " + id + ", leave!");
+      this._onSystemMessage(info.name + ", leave!");
     });
 
     client.on("transport-open", () => {
@@ -271,6 +291,13 @@ class App extends React.Component {
     this.setState({ messages });
   }
 
+  _onSystemMessage = (msg) => {
+    let messages = this.state.messages;
+    let uid = 2;
+    messages.push(new Message({ id: uid, message: msg, senderName: 'System' }));
+    this.setState({ messages });
+  }
+
   render() {
     const {
       login,
@@ -433,7 +460,7 @@ class App extends React.Component {
             <Spin size="large" tip="Connecting..." />
           ) : (
                 <Card title="Join to Ion" className="app-login-card">
-                  <LoginForm handleLogin={this._handleJoin} />
+                  <LoginForm handleLogin={this._handleJoin} createClient={this._createClient} />
                 </Card>
               )}
         </Content>
